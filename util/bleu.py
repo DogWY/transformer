@@ -1,13 +1,7 @@
-"""
-@author : Hyunwoong
-@when : 2019-12-22
-@homepage : https://github.com/gusdnd852
-"""
 import math
 from collections import Counter
 
 import numpy as np
-
 
 def bleu_stats(hypothesis, reference):
     """Compute statistics for BLEU."""
@@ -18,38 +12,64 @@ def bleu_stats(hypothesis, reference):
         s_ngrams = Counter(
             [tuple(hypothesis[i:i + n]) for i in range(len(hypothesis) + 1 - n)]
         )
+        """
+        Counter:
+            对一个序列中的所有元素去重和计数
+        """
         r_ngrams = Counter(
             [tuple(reference[i:i + n]) for i in range(len(reference) + 1 - n)]
         )
 
         stats.append(max([sum((s_ngrams & r_ngrams).values()), 0]))
+        """
+        Counter & Counter:
+            计算两个Counter的交集，如果元素一样，但是出现的频次不一样，则取最小的频次
+        Counter.values():
+            返回Counter中所有元素的频次
+        """
         stats.append(max([len(hypothesis) + 1 - n, 0]))
     return stats
 
-
 def bleu(stats):
-    """Compute BLEU given n-gram statistics."""
+    """
+    后面在计算bleu的时候，会用到log运算，因此不能出现0值，log(0)无意义
+    """
     if len(list(filter(lambda x: x == 0, stats))) > 0:
         return 0
+    
     (c, r) = stats[:2]
+    """
+    log bleu得分
+    """
     log_bleu_prec = sum(
         [math.log(float(x) / y) for x, y in zip(stats[2::2], stats[3::2])]
     ) / 4.
+    """
+    min([0, 1 - float(r) / c]): 长句子惩罚项
+    """
     return math.exp(min([0, 1 - float(r) / c]) + log_bleu_prec)
 
 
 def get_bleu(hypotheses, reference):
-    """Get validation BLEU score for dev set."""
     stats = np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0.])
+    """
+    统计每一个batch的所有stats再计算bleu
+    """
     for hyp, ref in zip(hypotheses, reference):
         stats += np.array(bleu_stats(hyp, ref))
     return 100 * bleu(stats)
 
 
 def idx_to_word(x, vocab):
+    """
+    将索引序列转换为单词序列
+    """
     words = []
     for i in x:
         word = vocab.itos[i]
+        """
+        如果不是特殊符号
+        """
         if '<' not in word:
             words.append(word)
     words = " ".join(words)

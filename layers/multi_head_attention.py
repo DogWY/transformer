@@ -1,15 +1,12 @@
-"""
-@author : Hyunwoong
-@when : 2019-10-25
-@homepage : https://github.com/gusdnd852
-"""
 from torch import nn
 
-from models.layers.scale_dot_product_attention import ScaleDotProductAttention
+from layers.scale_dot_product_attention import ScaleDotProductAttention
 
 
 class MultiHeadAttention(nn.Module):
-
+    """
+    多头注意力机制
+    """
     def __init__(self, d_model, n_head):
         super(MultiHeadAttention, self).__init__()
         self.n_head = n_head
@@ -20,6 +17,7 @@ class MultiHeadAttention(nn.Module):
         self.w_concat = nn.Linear(d_model, d_model)
 
     def forward(self, q, k, v, mask=None):
+        # 对于注意力机制来说，q、k、v的取值取决于特定的注意力计算方法，对于self-attention来说，q、k、v都是相同的。
         # 1. dot product with weight matrices
         q, k, v = self.w_q(q), self.w_k(k), self.w_v(v)
 

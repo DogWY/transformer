@@ -1,13 +1,8 @@
-"""
-@author : Hyunwoong
-@when : 2019-10-24
-@homepage : https://github.com/gusdnd852
-"""
 from torch import nn
 
-from models.layers.layer_norm import LayerNorm
-from models.layers.multi_head_attention import MultiHeadAttention
-from models.layers.position_wise_feed_forward import PositionwiseFeedForward
+from layers.layer_norm import LayerNorm
+from layers.multi_head_attention import MultiHeadAttention
+from layers.position_wise_feed_forward import PositionwiseFeedForward
 
 
 class DecoderLayer(nn.Module):

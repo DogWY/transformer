@@ -1,25 +1,10 @@
-"""
-@author : Hyunwoong
-@when : 2019-10-22
-@homepage : https://github.com/gusdnd852
-"""
 import torch
 from torch import nn
 
 
 class PositionalEncoding(nn.Module):
-    """
-    compute sinusoid encoding.
-    """
 
     def __init__(self, d_model, max_len, device):
-        """
-        constructor of sinusoid encoding class
-
-        :param d_model: dimension of model
-        :param max_len: max sequence length
-        :param device: hardware device setting
-        """
         super(PositionalEncoding, self).__init__()
 
         # same size with input matrix (for adding with input matrix)

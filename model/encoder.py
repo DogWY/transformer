@@ -1,12 +1,7 @@
-"""
-@author : Hyunwoong
-@when : 2019-12-18
-@homepage : https://github.com/gusdnd852
-"""
 from torch import nn
 
-from models.blocks.encoder_layer import EncoderLayer
-from models.embedding.transformer_embedding import TransformerEmbedding
+from blocks.encoder_layer import EncoderLayer
+from embedding.transformer_embedding import TransformerEmbedding
 
 
 class Encoder(nn.Module):

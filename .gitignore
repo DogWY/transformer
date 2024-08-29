@@ -1,7 +1,8 @@
-## dataset ignore
-data/
-venv/
-.data/
-*.pt
-__pycache__
-result/
+**/__pycache__
+*.pyc
+*.pyo
+*.pyd
+**/.DS_Store
+.data
+.idea
+.vscode
