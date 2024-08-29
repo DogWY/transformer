@@ -1,3 +1,8 @@
+"""
+@author : Hyunwoong
+@when : 2019-10-22
+@homepage : https://github.com/gusdnd852
+"""
 import math
 import time
 
@@ -9,17 +14,16 @@ from model.transformer import Transformer
 from util.bleu import idx_to_word, get_bleu
 from util.epoch_timer import epoch_time
 
+
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
+
 def initialize_weights(m):
-    """
-    带有weight属性的模块一般都是可训练块，比如Linear和Conv。
-    维度为1时，一般是模块的bias项，一般不需要进行初始化。
-    """
     if hasattr(m, 'weight') and m.weight.dim() > 1:
         nn.init.kaiming_uniform(m.weight.data)
-        
+
+
 model = Transformer(src_pad_idx=src_pad_idx,
                     trg_pad_idx=trg_pad_idx,
                     trg_sos_idx=trg_sos_idx,
@@ -47,30 +51,21 @@ scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer=optimizer,
 
 criterion = nn.CrossEntropyLoss(ignore_index=src_pad_idx)
 
+
 def train(model, iterator, optimizer, criterion, clip):
     model.train()
     epoch_loss = 0
     for i, batch in enumerate(iterator):
         src = batch.src
-        """
-        在机器翻译的任务中，实际场景下我们在翻译时是没有trg的，只有src。
-        但是训练时我们引入强教师策略，通过引入真实的trg，在每次迭代时都基于真实的trg进行推理，从而使模型更快的收敛。
-        实际在部署时，模型会将开始符号'<sos>'作为trg，然后不在得到'<eos>'之前不断的自回归推理。
-        """
         trg = batch.trg
 
         optimizer.zero_grad()
-        # 去除最后一个元素，因为它是戴预测目标
         output = model(src, trg[:, :-1])
-        # contiguous()将output转化为连续张量，如果output本身连续，则不转化，如果不连续，则将原output中的数据copy到新张量中并调整为连续
-        # 只有连续张量才能使用view()
         output_reshape = output.contiguous().view(-1, output.shape[-1])
-        # 可以讲每一个trg中的元素看成一次分类任务，所以view(-1)将其展开为一维，然后交给criterion
         trg = trg[:, 1:].contiguous().view(-1)
 
         loss = criterion(output_reshape, trg)
         loss.backward()
-        # 约束参数值到一个范围内，防止梯度爆炸或消失
         torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
         optimizer.step()
 
@@ -78,6 +73,7 @@ def train(model, iterator, optimizer, criterion, clip):
         print('step :', round((i / len(iterator)) * 100, 2), '% , loss :', loss.item())
 
     return epoch_loss / len(iterator)
+
 
 def evaluate(model, iterator, criterion):
     model.eval()
@@ -120,7 +116,6 @@ def run(total_epoch, best_loss):
         valid_loss, bleu = evaluate(model, valid_iter, criterion)
         end_time = time.time()
 
-        # 到warmup步后，开始使用scheduler进行学习率衰减，根据模型在验证集上的loss进行调整
         if step > warmup:
             scheduler.step(valid_loss)
 
@@ -129,7 +124,6 @@ def run(total_epoch, best_loss):
         bleus.append(bleu)
         epoch_mins, epoch_secs = epoch_time(start_time, end_time)
 
-        # 每当模型得到改善，保存模型参数
         if valid_loss < best_loss:
             best_loss = valid_loss
             torch.save(model.state_dict(), 'saved/model-{0}.pt'.format(valid_loss))
