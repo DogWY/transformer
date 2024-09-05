@@ -17,7 +17,7 @@ class ScaleDotProductAttention(nn.Module):
 
         # 多个样本(batch)和多头注意力下，反转2、3维度等效于对k_i进行转制
         k_t = k.transpose(2, 3) 
-        # @ 表示矩阵乘法
+        # @ 表示矩阵乘法，如果两个矩阵是3维及以上的，则会对最后两维度进行矩阵乘法，之前的维度就是对应位置
         score = (q @ k_t) / math.sqrt(d_tensor)
 
         if mask is not None:
